@@ -1,0 +1,14 @@
+{
+	"id": "{DB96DF85-9BB4-4352-8BA4-60D744E9DB3F}",
+	"name": "DoorBell",
+	"type": 3,
+	"vendor": "Astyc84",
+	"aliases": 
+	[
+		"DoorBell"
+	],
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "DOBE"
+}

@@ -1,0 +1,27 @@
+{
+	"translations": {
+		"de": {
+			"COMMENT1" 									: "FORM.JS <------------------------------------------------------------->",
+			"Use only devices with state on" 			: "Nur eingeschaltete Geräte benutzen",
+			"Last state"								: "Letzter Zustand",
+			"On"										: "Ein",
+			"Off"										: "Aus",
+			"Previous"									: "Wie vorher",
+			"Count of flashes"							: "Blinkanzahl",
+			"Periods in seconds" 						: "Die Verweildauer wird in Sekunden angegeben",
+			"Period ON"									: "Verweildauer EIN",
+			"Period OFF"								: "Verweildauer AUS",
+			"Add/Delete variables to blink" 			: "Hinzufügen/Löschen von Gerätevariablen, welche Blinken sollen",
+			"Devicevariables"							: "Gerätevariablen",
+			"Select variable"							: "Variable auswählen",
+			"COMMENT2" 									: "MODULE.PHP <---------------------------------------------------------->",
+			"Timecontroller for flashing"				: "Blinkzeitsteuerung",
+			"Error: Please check the Messages" 			: "Fehler: Bitte kontrollieren Sie die Messages",
+			"Please post a feature-request"				: "Bitte schreiben Sie eine Anforderung im Forum",
+			"Not a variable" 							: "Ist keine Variable",
+			"No action set"								: "Hat keine Aktion",
+			"No devices set"							: "Keine Geräte ausgewählt",
+			"Not found!" 								: "Nicht gefunden!"		
+		}
+	}
+}

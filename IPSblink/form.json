@@ -1,0 +1,55 @@
+{
+	"elements":
+	[
+		{ "type": "CheckBox", "name": "onlyOn", "caption": "Use only devices with state on" },
+		{ "type": "Select", "name": "lastState", "caption": "Last state",
+			"options": [
+				{ "label": "Off", "value": 0 },
+				{ "label": "On", "value": 1 },
+				{ "label": "Previous", "value": 2 }
+			]
+		},
+		{ "type": "NumberSpinner", "name": "blinkNum", "caption": "Count of flashes" },
+		{ "type": "Label", "label": "Periods in seconds" },
+		{ "type": "NumberSpinner", "name": "timeOn", "caption": "Period ON" },
+		{ "type": "NumberSpinner", "name": "timeOff", "caption": "Period OFF" },
+      	{ "type": "Label", "label": "Add/Delete variables to blink" },
+      	{
+			"type": "List",
+			"name": "devices",
+			"caption": "Devicevariables",
+			"add": true,
+			"delete": true,
+			"sort": {
+			  "column": "ID",
+			  "direction": "ascending"
+				},
+			"columns": [{
+			  "name" : "id",
+			  "label" : "ID",
+			  "width" : "50px",
+			  "add": 0,
+			  "edit": {
+				"type": "SelectVariable"
+			  }
+			}, {
+			  "name": "name",
+			  "label": "Name",
+			  "width": "190px",
+			  "add": "Variable auswählen"
+			}, {
+			  "name" : "variable",
+			  "label" : "Variable",
+			  "width" : "60px",
+			  "add": ""
+			}, {
+			  "name" : "status",
+			  "label" : "Status",
+			  "width" : "120",
+			  "add": ""
+			}],
+			"values": []
+		},
+		{ "type": "Button", "label": "Test", "onClick": "IPSblink_Blink($id);" }	  
+	]
+}

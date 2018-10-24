@@ -1,0 +1,43 @@
+{
+	"elements":
+	[
+		{ "type": "SelectVariable", "name": "bellButtonID", "caption": "Bell button" },
+		{ "type": "ValidationTextBox", "name": "bellButtonValue", "caption": "Value for ringing" },
+		{ "type": "NumberSpinner", "name": "bellButtonLockTime", "caption": "Locktime in seconds" },
+		
+		{ "type": "SelectScript", "name": "dayScriptID", "caption": "Script for day" },
+		{ "type": "SelectScript", "name": "nightScriptID", "caption": "Script for night" },
+	
+		{ "type": "SelectInstance", "name": "wfID", "caption": "WebFront for pushmessage" },
+		{ "type": "ValidationTextBox", "name": "pushMessage", "caption": "Message" },
+		{ "type": "Select", "name": "pushSound", "caption": "Pushsound", 
+			"options": 
+			[
+				{ "label": "Alarm", "value": 0 },
+				{ "label": "Bell", "value": 1 },
+				{ "label": "Boom", "value": 2 },
+				{ "label": "Buzzer", "value": 3 },
+				{ "label": "Connected", "value": 4 },
+				{ "label": "Dark", "value": 5 },
+				{ "label": "Digital", "value": 6 },
+				{ "label": "Drums", "value": 7 },
+				{ "label": "Duck", "value": 8 },
+				{ "label": "Full", "value": 9 },
+				{ "label": "Happy", "value": 10 },
+				{ "label": "Horn", "value": 11 },
+				{ "label": "Inception", "value": 12 },
+				{ "label": "Kazoo", "value": 13 },
+				{ "label": "Roll", "value": 14 },
+				{ "label": "Siren", "value": 15 },
+				{ "label": "Space", "value": 16 },
+				{ "label": "Trickling", "value": 17 },
+				{ "label": "Turn", "value": 18 }
+			]
+		},
+		{ "type": "SelectMedia", "name": "webCamImageID", "caption": "WebCam-Image" },
+		{ "type": "NumberSpinner", "name": "numPics", "caption": "Save webcam pictures" },
+		{ "type": "CheckBox", "name": "linkImage", "caption": "Link message with image" },
+		
+		{ "type": "Button", "label": "Bell", "onClick": "DOBE_Bell($id);" }	  
+	]
+}

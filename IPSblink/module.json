@@ -1,0 +1,14 @@
+{
+	"id": "{86487C7F-C445-4683-B299-4A88E36BAEB1}",
+	"name": "IPSblink",
+	"type": 3,
+	"vendor": "Astyc84",
+	"aliases": 
+	[
+		"IPSblink"
+	],
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "IPSblink"
+}
