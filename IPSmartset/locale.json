@@ -1,0 +1,9 @@
+{
+    "translations": {
+        "de": { 
+            "Get all devices"	: "Geräte holen",
+            "Poll devices"		: "Geräte Abfragen",
+			"ISM Password"		: "ISM Passwort"
+        }
+    }
+}

@@ -1,0 +1,14 @@
+{
+	"id": "{C34F5DD3-8E26-44D9-83F9-C4FA2A5FA16B}",
+	"name": "IPSmartset",
+	"type": 3,
+	"vendor": "Astyc84",
+	"aliases": 
+	[
+		"IPSmartset"
+	],
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "IPSM"
+}
