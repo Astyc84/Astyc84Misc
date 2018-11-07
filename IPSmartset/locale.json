@@ -3,7 +3,9 @@
         "de": { 
             "Get all devices"	: "Geräte holen",
             "Poll devices"		: "Geräte Abfragen",
-			"ISM Password"		: "ISM Passwort"
+			"ISM Password"		: "ISM Passwort",
+			"Connection reset"	: "Verbindung zurücksetzen",
+			"Save response"		: "Antwort speichern"
         }
     }
 }
