@@ -52,6 +52,6 @@
 		},
 		{ "type": "Button", "label": "Get all devices", "onClick": "IPSM_ObserveLocalGateways($id);" },
 		{ "type": "Button", "label": "Connection reset", "onClick": "IPSM_UpdateConnection($id);" },
-		{ "type": "Button", "label": "Save response", "onClick": "IPSM_SaveResponse($id);" }
+		{ "type": "Button", "label": "Save wolf-response", "onClick": "IPSM_SaveResponse($id);" }
 	]
 }
