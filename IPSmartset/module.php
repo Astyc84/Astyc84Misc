@@ -17,7 +17,7 @@ class IPSmartset extends IPSModule{
             IPS_SetVariableProfileAssociation('IPSM.State', 4, 'Access-Token aktualisieren', '', -1);
             IPS_SetVariableProfileAssociation('IPSM.State', 5, 'Access-Token fehlerhaft', '', -1);
         }
-		
+        
         $smartsetStateID = $this->CreateVariableByIdent($this->InstanceID, "smartsetState", "Smartset Status", 1, "IPSM.State", 0, 100);
         
         $updateVarsID = $this->CreateEventByIdent($this->InstanceID, "updateVarsEvent", "UpdateVars", 1, $position = 101);
@@ -52,9 +52,9 @@ class IPSmartset extends IPSModule{
         
         //$this->Logon();
         /*
-        $url            = $this->GetURL("observeLocalGateways");
-        $response       = $this->send($url.'?'.$this->addTime(), "", "GET");
-        */
+         $url            = $this->GetURL("observeLocalGateways");
+         $response       = $this->send($url.'?'.$this->addTime(), "", "GET");
+         */
     }
     
     public function UpdateVars(){
@@ -145,7 +145,7 @@ class IPSmartset extends IPSModule{
         $pollDevicesJson   = $this->ReadPropertyString("pollDevices");
         $pollDevices       = json_decode($pollDevicesJson);
         foreach($pollDevices as $pollDevice){
-            if($gatewayTagID = @IPS_GetObjectIDByIdent("gatewayTag", $pollDevice->varID)){               
+            if($gatewayTagID = @IPS_GetObjectIDByIdent("gatewayTag", $pollDevice->varID)){
                 $this->ConnectGateway($pollDevice->varID, $pollDevice->password);
                 $this->GetGuiDescriptionForGateway($pollDevice->varID);
             }
@@ -187,105 +187,130 @@ class IPSmartset extends IPSModule{
         }
     }
     
+    public function SaveResponse(){
+        $pollDevicesJson   = $this->ReadPropertyString("pollDevices");
+        $pollDevices       = json_decode($pollDevicesJson);
+        foreach($pollDevices as $pollDevice){
+            if($systemID   = @GetValueString(@IPS_GetObjectIDByIdent("id", $pollDevice->varID)) &&
+                $gatewayID  = @GetValueString(@IPS_GetObjectIDByIdent("gatewayID", $pollDevice->varID))){
+                    if($systemID > 0 && $gatewayID > 0){
+                        $url	= $this->GetURL("getGuiDescriptionForGateway");
+                        $send   = $this->send($url.'?GatewayId='.$gatewayID.'&SystemId='.$systemID.'&'.$this->addTime(), "", "GET");
+                        if($send["code"] == 200){
+                            $docID = IPS_CreateMedia(5);
+                            IPS_SetName($docID, "Antwortdatei_".IPS_GetName($pollDevice->varID));
+                            IPS_SetParent($docID, $pollDevice->varID);
+                            IPS_SetMediaFile($docID, "media/".$docID.".txt", False);
+                            IPS_SetMediaContent($docID, base64_encode(json_encode($send["response"])));
+                        }
+                    }else{
+                        echo "Fehler";
+                    }
+            }else{
+                echo "Fehler";
+            }
+        }
+    }
+    
     public function GetGuiDescriptionForGateway($gatewayCatID){
         $systemID   = @GetValueString(@IPS_GetObjectIDByIdent("id", $gatewayCatID));
         $gatewayID  = @GetValueString(@IPS_GetObjectIDByIdent("gatewayID", $gatewayCatID));
         
         if($systemID > 0 && $gatewayID > 0){
-    		$url	= $this->GetURL("getGuiDescriptionForGateway");
+            $url	= $this->GetURL("getGuiDescriptionForGateway");
             $send   = $this->send($url.'?GatewayId='.$gatewayID.'&SystemId='.$systemID.'&'.$this->addTime(), "", "GET");
             $this->BuildTree($send["response"], $gatewayCatID);
         }else{
             echo "Fehler";
         }
-	}
+    }
     
-	private function BuildTree($data, $parentID){
-	    if(isset($data["MenuItems"])){
-	        foreach($data["MenuItems"] as &$menuItem){
-	            $nextParentID  = $this->CreateCategoryByIdent($parentID, $menuItem["SortId"], $menuItem["Name"]);
-	            $this->BuildTree($menuItem, $nextParentID);
-	        }
-	    }
-	    if(isset($data["SubMenuEntries"])){
-	        foreach($data["SubMenuEntries"] as &$subMenuEntries){
-	            $nextParentID  = $this->CreateCategoryByIdent($parentID, $subMenuEntries["SortId"], $subMenuEntries["Name"]);
-	            $this->BuildTree($subMenuEntries, $nextParentID);
-	        }
-	    }
-	    if(isset($data["TabViews"])){
-	        foreach($data["TabViews"] as &$tabViews){
-	            if($varID = @IPS_GetVariableIDByName($tabViews["TabName"], $parentID)){
-	                IPS_SetIdent($varID, "bundleID_".$tabViews["BundleId"]);
-	            } else {
-	                $nextParentID  = $this->CreateCategoryByIdent($parentID, "bundleID_".$tabViews["BundleId"], $tabViews["TabName"]);
-	            }
-	            $this->BuildTree($tabViews, $nextParentID);
-	        }
-	    }
-	    if(isset($data["ParameterDescriptors"])){
-	        foreach($data["ParameterDescriptors"] as &$parameterDescriptors){
-	            switch(intval($parameterDescriptors["ControlType"])){
-	                default : $varType = 100;  break; // No Type
-	                case 0  : $varType = 1;    break; // Array
-	                case 3  : $varType = 1;    break; // Array
-	                case 6  :
-	                    switch(intval($parameterDescriptors["Decimals"])){
-	                        case 0 : $varType = 1;break; // Integer
-	                        case 1 : $varType = 2;break; // Float
-	                    }
-	                    break;
-	                case 10 :
-	                    $varType = 3; // String
-	                    break;
-	                    
-	            }
-	            //VarID aktualisieren
-	            if($varID = @IPS_GetVariableIDByName($parameterDescriptors["Name"], $parentID)){
-	                IPS_SetIdent($varID, "valueID_".$parameterDescriptors["ValueId"]);
-	            } else {
-	                if(isset($varType) && $varType >= 0 && $varType <= 3){
-	                    $nextParentID = $this->CreateVariableByIdent($parentID, "valueID_".$parameterDescriptors["ValueId"], $parameterDescriptors["Name"], $varType);
-	                    if($parameterDescriptors["IsReadOnly"] != 1){
-	                        IPS_SetVariableCustomAction($nextParentID, IPS_GetObjectIDByIdent("changeScr", $this->InstanceID));
-	                    }
-	                    
-	                    // Profile
-	                    if(!is_array($parameterDescriptors["ListItems"])){
-	                        if(strpos($parameterDescriptors["Unit"], "°C")){
-	                            switch($varType){
-	                                case 1 : $profileName = "IPSM.TemperatureI";break;
-	                                case 2 : $profileName = "IPSM.TemperatureF";break;   
-	                            }
-	                            if(!empty($parameterDescriptors["MinValueCondition"]) && !empty($parameterDescriptors["MinValueCondition"])){
-	                                $profileName .= '_'.$parameterDescriptors["MinValueCondition"];
-	                                $profileName .= '_'.$parameterDescriptors["MaxValueCondition"];
-	                            }
-	                            if (!IPS_VariableProfileExists($profileName)) {
+    private function BuildTree($data, $parentID){
+        if(isset($data["MenuItems"])){
+            foreach($data["MenuItems"] as &$menuItem){
+                $nextParentID  = $this->CreateCategoryByIdent($parentID, $menuItem["SortId"], $menuItem["Name"]);
+                $this->BuildTree($menuItem, $nextParentID);
+            }
+        }
+        if(isset($data["SubMenuEntries"])){
+            foreach($data["SubMenuEntries"] as &$subMenuEntries){
+                $nextParentID  = $this->CreateCategoryByIdent($parentID, $subMenuEntries["SortId"], $subMenuEntries["Name"]);
+                $this->BuildTree($subMenuEntries, $nextParentID);
+            }
+        }
+        if(isset($data["TabViews"])){
+            foreach($data["TabViews"] as &$tabViews){
+                if($varID = @IPS_GetVariableIDByName($tabViews["TabName"], $parentID)){
+                    IPS_SetIdent($varID, "bundleID_".$tabViews["BundleId"]);
+                } else {
+                    $nextParentID  = $this->CreateCategoryByIdent($parentID, "bundleID_".$tabViews["BundleId"], $tabViews["TabName"]);
+                }
+                $this->BuildTree($tabViews, $nextParentID);
+            }
+        }
+        if(isset($data["ParameterDescriptors"])){
+            foreach($data["ParameterDescriptors"] as &$parameterDescriptors){
+                switch(intval($parameterDescriptors["ControlType"])){
+                    default : $varType = 100;  break; // No Type
+                    case 0  : $varType = 1;    break; // Array
+                    case 3  : $varType = 1;    break; // Array
+                    case 6  :
+                        switch(intval($parameterDescriptors["Decimals"])){
+                            case 0 : $varType = 1;break; // Integer
+                            case 1 : $varType = 2;break; // Float
+                        }
+                        break;
+                    case 10 :
+                        $varType = 3; // String
+                        break;
+                        
+                }
+                //VarID aktualisieren
+                if($varID = @IPS_GetVariableIDByName($parameterDescriptors["Name"], $parentID)){
+                    IPS_SetIdent($varID, "valueID_".$parameterDescriptors["ValueId"]);
+                } else {
+                    if(isset($varType) && $varType >= 0 && $varType <= 3){
+                        $nextParentID = $this->CreateVariableByIdent($parentID, "valueID_".$parameterDescriptors["ValueId"], $parameterDescriptors["Name"], $varType);
+                        if($parameterDescriptors["IsReadOnly"] != 1){
+                            IPS_SetVariableCustomAction($nextParentID, IPS_GetObjectIDByIdent("changeScr", $this->InstanceID));
+                        }
+                        
+                        // Profile
+                        if(!is_array($parameterDescriptors["ListItems"])){
+                            if(strpos($parameterDescriptors["Unit"], "Â°C")){
+                                switch($varType){
+                                    case 1 : $profileName = "IPSM.TemperatureI";break;
+                                    case 2 : $profileName = "IPSM.TemperatureF";break;
+                                }
+                                if(!empty($parameterDescriptors["MinValueCondition"]) && !empty($parameterDescriptors["MinValueCondition"])){
+                                    $profileName .= '_'.$parameterDescriptors["MinValueCondition"];
+                                    $profileName .= '_'.$parameterDescriptors["MaxValueCondition"];
+                                }
+                                if (!IPS_VariableProfileExists($profileName)) {
                                     IPS_CreateVariableProfile($profileName, $varType);
                                     IPS_SetVariableProfileDigits($profileName, intval($parameterDescriptors["Decimals"]));
                                     IPS_SetVariableProfileValues($profileName, $parameterDescriptors["MinValueCondition"], $parameterDescriptors["MaxValueCondition"], $parameterDescriptors["StepWidth"]);
-                                    IPS_SetVariableProfileText($profileName, "", " °C");
-	                            }
-	                            IPS_SetVariableCustomProfile ($nextParentID, $profileName);
-	                        } else if($parameterDescriptors["Unit"] == "Std"){
-	                            switch($varType){
-	                                case 1 : $profileName = "IPSM.HoursI";break;
-	                                case 2 : $profileName = "IPSM.HoursF";break;
-	                            }
-	                            if(!empty($parameterDescriptors["MinValueCondition"]) && !empty($parameterDescriptors["MinValueCondition"])){
-	                                $profileName .= '_'.$parameterDescriptors["MinValueCondition"];
-	                                $profileName .= '_'.$parameterDescriptors["MaxValueCondition"];
-	                            }
-	                            if (!IPS_VariableProfileExists($profileName)) {
-	                                IPS_CreateVariableProfile($profileName, $varType);
-	                                IPS_SetVariableProfileDigits($profileName, intval($parameterDescriptors["Decimals"]));
-	                                IPS_SetVariableProfileValues($profileName, $parameterDescriptors["MinValueCondition"], $parameterDescriptors["MaxValueCondition"], $parameterDescriptors["StepWidth"]);
-	                                IPS_SetVariableProfileText($profileName, "", " Stunde(n)");
-	                            }
-	                            IPS_SetVariableCustomProfile ($nextParentID, $profileName);
-	                        }
-	                    } else {
+                                    IPS_SetVariableProfileText($profileName, "", " Â°C");
+                                }
+                                IPS_SetVariableCustomProfile ($nextParentID, $profileName);
+                            } else if($parameterDescriptors["Unit"] == "Std"){
+                                switch($varType){
+                                    case 1 : $profileName = "IPSM.HoursI";break;
+                                    case 2 : $profileName = "IPSM.HoursF";break;
+                                }
+                                if(!empty($parameterDescriptors["MinValueCondition"]) && !empty($parameterDescriptors["MinValueCondition"])){
+                                    $profileName .= '_'.$parameterDescriptors["MinValueCondition"];
+                                    $profileName .= '_'.$parameterDescriptors["MaxValueCondition"];
+                                }
+                                if (!IPS_VariableProfileExists($profileName)) {
+                                    IPS_CreateVariableProfile($profileName, $varType);
+                                    IPS_SetVariableProfileDigits($profileName, intval($parameterDescriptors["Decimals"]));
+                                    IPS_SetVariableProfileValues($profileName, $parameterDescriptors["MinValueCondition"], $parameterDescriptors["MaxValueCondition"], $parameterDescriptors["StepWidth"]);
+                                    IPS_SetVariableProfileText($profileName, "", " Stunde(n)");
+                                }
+                                IPS_SetVariableCustomProfile ($nextParentID, $profileName);
+                            }
+                        } else {
                             $profileName = str_replace(' ', '_', $parameterDescriptors["Name"]);
                             $profileName = 'IPSM.'.preg_replace('/[^A-Za-z0-9\-]/', '', $profileName);
                             if (!IPS_VariableProfileExists($profileName)) {
@@ -295,12 +320,12 @@ class IPSmartset extends IPSModule{
                                 }
                             }
                             IPS_SetVariableCustomProfile ($nextParentID, $profileName);
-	                    }
-	                }
-	            }
-	        }
-	    }
-	}
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     private function GetURL($function){
         $return["function"] = "GetURL";
@@ -350,10 +375,10 @@ class IPSmartset extends IPSModule{
                         SetValueString($gatewayTagID, $responseDevice["GatewayTag"]);
                         
                         SetValueInteger(IPS_GetObjectIDByIdent("deviceState", $hostnameCatID), 1);
-                        echo "Bitte jetzt die abzufragenden Geräte in der Liste hinzufügen!";
+                        echo "Bitte jetzt die abzufragenden GerÃ¤te in der Liste hinzufÃ¼gen!";
                     }
                 }
-            break;
+                break;
         }
     }
     
@@ -402,12 +427,12 @@ class IPSmartset extends IPSModule{
             default :
                 SetValueInteger(IPS_GetObjectIDByIdent("smartsetState", $this->InstanceID), 0);
                 $return["error"] = "ERROR: Unknown #".$errorCode;
-            break;
+                break;
             case 0 :
                 SetValueInteger(IPS_GetObjectIDByIdent("smartsetState", $this->InstanceID), 2);
                 $return["error"] = "ERROR: Smartset offline";
-            break;
-            //case 400 : // WRONG SESSION
+                break;
+                //case 400 : // WRONG SESSION
             case 401 : // WRONG Access-Token
                 $accessRetry = intval($this->GetBuffer("AccessRetry"));
                 if($accessRetry < 2){
@@ -421,12 +446,12 @@ class IPSmartset extends IPSModule{
                     $this->SendDebug($return["function"], "ERROR: AccessToken wrong", 0);
                     $this->SetBuffer("AccessRetry", 0);;
                 }
-            break;
-            //case 500 : $this->GetGuiDescriptionForGateway($gatewayCatID, $gatewayID, $systemID); //Wrong IDs
+                break;
+                //case 500 : $this->GetGuiDescriptionForGateway($gatewayCatID, $gatewayID, $systemID); //Wrong IDs
             case 200 :
                 SetValueInteger(IPS_GetObjectIDByIdent("smartsetState", $this->InstanceID), 1);
                 $return["error"] = "OK: Command success";
-            break;
+                break;
         }
         if(isset($return["error"])){
             $this->SendDebug($return["function"], $return["error"], 0);
@@ -466,7 +491,7 @@ class IPSmartset extends IPSModule{
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:61.0) Gecko/20100101 Firefox/61.0');
-        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10); 
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
         $curlResp   = curl_exec($curl);
         $errorCode  = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
@@ -479,23 +504,23 @@ class IPSmartset extends IPSModule{
             default :
                 SetValueInteger(IPS_GetObjectIDByIdent("smartsetState", $this->InstanceID), 0);
                 $return["error"] = "ERROR: Unknown #".$errorCode;
-            break;
+                break;
             case 0 :
                 SetValueInteger(IPS_GetObjectIDByIdent("smartsetState", $this->InstanceID), 2);
                 $return["error"] = "ERROR: Smartset offline";
-            break;
-            //case 400 :
+                break;
+                //case 400 :
             case 401 :
                 SetValueInteger(IPS_GetObjectIDByIdent("smartsetState", $this->InstanceID), 3);
                 $return["error"] = "ERROR: Smartset authentification wrong";
-            break;
+                break;
             case 200 :
                 SetValueInteger(IPS_GetObjectIDByIdent("smartsetState", $this->InstanceID), 1);
                 $return["error"] = "OK: Smartset authentification success";
                 $this->SetBuffer("TokenType", $respArray["token_type"]);
                 $this->SetBuffer("AccessToken", $respArray["access_token"]);
                 IPS_SetEventActive(IPS_GetObjectIDByIdent("updateSessionEvent", $this->InstanceID), true);
-            break;
+                break;
         }
         $this->SendDebug($return["function"], $return["error"], 0);
         $this->SendDebug($return["function"], "END", 0);
@@ -513,11 +538,11 @@ class IPSmartset extends IPSModule{
         $send               = $this->send($url.'?GatewayTag='.$gatewayTag.'&Password='.$password.'&'.$this->addTime(), "", "GET");
         $return["code"]     = $send["code"];
         switch($send["code"]){
-            case 400: 
+            case 400:
                 SetValueInteger(IPS_GetObjectIDByIdent("deviceState", $gatewayCatID), 3);
                 $return["error"] = "ISM-Password wrong";
                 $this->SendDebug($return["function"], $return["error"], 0);
-            break;
+                break;
             case 200:
                 if(!empty($send["response"]["Id"]) && !empty($send["response"]["GatewayId"])){
                     SetValueInteger(IPS_GetObjectIDByIdent("deviceState", $gatewayCatID), 1);
@@ -537,7 +562,7 @@ class IPSmartset extends IPSModule{
                     $return["error"] = "No content in response";
                     $this->SendDebug($return["function"], $return["error"], 0);
                 }
-            break;
+                break;
         }
         return $return;
         $this->SendDebug($return["function"], "END", 0);
@@ -579,7 +604,7 @@ class IPSmartset extends IPSModule{
         $data = json_decode(file_get_contents(__DIR__ . "/form.json"));
         if($this->ReadPropertyString("pollDevices") != "") {
             $pollDevices = json_decode($this->ReadPropertyString("pollDevices"));
-            foreach($pollDevices as $pollDevice) { 
+            foreach($pollDevices as $pollDevice) {
                 if(!$gatewayTagID = @IPS_GetObjectIDByIdent("gatewayTag", $pollDevice->varID)){
                     $connect["error"] = "Kein Gateway-Tag gefunden";
                 } else if($gatewayTagID > 0 && empty(GetValueString($gatewayTagID))){
@@ -593,7 +618,7 @@ class IPSmartset extends IPSModule{
                     }
                 }
                 
-                if($connect["error"] != "OK"){
+                if(isset($connect["error"]) && $connect["error"] != "OK"){
                     $data->elements[2]->values[] = Array(
                         "varID"         => $pollDevice->varID,
                         "name"          => $connect["error"],
