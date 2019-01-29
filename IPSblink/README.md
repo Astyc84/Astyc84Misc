@@ -30,7 +30,7 @@ Es werden immer die zu schaltenden Variablen unter der Aktor-Instanz verlinkt.
 
 ### 3. Software-Installation
 
-Über das Modul-Control folgende URL hinzufügen.  
+Über den Modul-Store bzw. Module-Control folgende URL hinzufügen:  
 `https://github.com/Astyc84/Astyc84Misc`  
 
 
@@ -53,7 +53,17 @@ Geräte        						| Diese Liste beinhaltet die Variablen, welche bei Auslösu
 ### 5. PHP-Befehlsreferenz
 `IPSblink_Blink(integer $InstanzID);`  
 Die verlinkten Aktoren fangen mit der hinterlegten Konfiguration der Instanz an zu blinken.  
-Die Funktion liefert keinerlei Rückgabewert.  
+Die Funktion liefert keinerlei Rückgabewert.
+
+`IPSblink_Stop(integer $InstanzID);`  
+Die verlinkten Aktoren hören auf zu blinken und nehmen ggf. einen definierten Zustand wieder an.  
+Die Funktion liefert keinerlei Rückgabewert.    
+
+`IPSblink_SetOn(int $count);`
+Wird nur für interne Zwecke (Event) benutzt.
+  
+`IPSblink_SetOff(int $count);`
+Wird nur für interne Zwecke (Event) benutzt.
 
 
 ### 6. Fehlermeldungen
